@@ -2,7 +2,8 @@ package com.zero.core.api.rbac;
 
 public interface User {
 	
-	public String getUsersByGroup(Group group);
+	public abstract String getUsersByGroup(Group group);
+	
 	
 
 }
