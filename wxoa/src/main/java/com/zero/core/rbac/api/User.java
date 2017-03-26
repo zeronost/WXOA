@@ -1,17 +1,20 @@
 package com.zero.core.rbac.api;
 
-import java.util.Iterator;
+import java.util.Collection;
 
-public interface User {
+public interface User{
 	
-	public  abstract Iterator<User> getUsersByGroup(Group group);
+	String getUid();
 	
-	public abstract String getUserName();
+	String getAccount();
 	
-	public abstract Iterator<Role> getUserRoles();
+	String getUserName();
 	
-	public abstract Iterator<Entitle> getUserEntitle();
+	String getType();
 	
-	public abstract boolean checkEntitle();
+	String getFingerPrints();
 	
+	String getPassWord();
+	
+	Collection<Role> getRoles();
 }
