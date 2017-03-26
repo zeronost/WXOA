@@ -1,8 +1,8 @@
-package com.zero.core.rbac.serviceImpl;
+package com.zero.rbac.serviceImpl;
 
 import com.google.inject.Singleton;
-import com.zero.core.rbac.api.User;
-import com.zero.core.rbac.service.RbacService;
+import com.zero.rbac.domain.api.User;
+import com.zero.rbac.service.RbacService;
 
 @Singleton
 public class RbacServiceImpl implements RbacService {

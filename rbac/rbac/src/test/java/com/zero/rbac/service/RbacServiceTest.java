@@ -9,9 +9,8 @@ import org.junit.Test;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.zero.core.rbac.module.RbacDomainModule;
-import com.zero.core.rbac.api.User;
-import com.zero.core.rbac.service.RbacService;
+import com.zero.rbac.domain.api.User;
+import com.zero.rbac.module.RbacDomainModule;
 
 public class RbacServiceTest {
 

@@ -1,6 +1,6 @@
-package com.zero.core.rbac.impl;
+package com.zero.rbac.domain.impl;
 
-import com.zero.core.rbac.api.User;
+import com.zero.rbac.domain.api.User;
 
 public class NormalUser extends AbstractUser implements User {
 

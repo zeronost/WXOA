@@ -1,8 +1,6 @@
-package com.zero.core.rbac.api;
+package com.zero.rbac.domain.api;
 
 import java.util.Collection;
-
-import com.zero.core.common.api.AbstractEntity;
 
 public interface Entitle extends AbstractEntity{
 	

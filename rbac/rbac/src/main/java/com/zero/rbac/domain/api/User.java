@@ -1,4 +1,4 @@
-package com.zero.core.rbac.api;
+package com.zero.rbac.domain.api;
 
 import java.util.Collection;
 

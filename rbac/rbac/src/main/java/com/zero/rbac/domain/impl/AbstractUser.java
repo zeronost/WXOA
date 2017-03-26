@@ -1,4 +1,4 @@
-package com.zero.core.rbac.impl;
+package com.zero.rbac.domain.impl;
 
 import java.util.Collection;
 
@@ -11,8 +11,8 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
-import com.zero.core.rbac.api.Role;
-import com.zero.core.rbac.api.User;
+import com.zero.rbac.domain.api.Role;
+import com.zero.rbac.domain.api.User;
 
 @Entity(name = "User")
 @Table(name = "User", schema = "RBAC_CORE")

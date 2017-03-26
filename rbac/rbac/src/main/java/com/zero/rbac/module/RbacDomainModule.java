@@ -1,11 +1,11 @@
-package com.zero.core.rbac.module;
+package com.zero.rbac.module;
 
 import com.google.inject.AbstractModule;
-import com.zero.core.rbac.api.User;
-import com.zero.core.rbac.impl.AbstractUser;
-import com.zero.core.rbac.impl.NormalUser;
-import com.zero.core.rbac.service.RbacService;
-import com.zero.core.rbac.serviceImpl.RbacServiceImpl;
+import com.zero.rbac.domain.api.User;
+import com.zero.rbac.domain.impl.AbstractUser;
+import com.zero.rbac.domain.impl.NormalUser;
+import com.zero.rbac.service.RbacService;
+import com.zero.rbac.serviceImpl.RbacServiceImpl;
 
 public class RbacDomainModule extends AbstractModule {
 
