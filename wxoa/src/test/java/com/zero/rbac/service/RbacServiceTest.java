@@ -9,7 +9,7 @@ import org.junit.Test;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.zero.core.rbac.Module.RbacDomainModule;
+import com.zero.core.rbac.module.RbacDomainModule;
 import com.zero.core.rbac.api.User;
 import com.zero.core.rbac.service.RbacService;
 
