@@ -30,7 +30,7 @@ public class CoreProcessor {
 			logger.info("hits "+ process.hitcount +" filecount " + process.filecounts);
 			logger.info(result);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("error occured",e);
 		}
 	}
 	
