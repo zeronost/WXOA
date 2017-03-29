@@ -52,9 +52,9 @@ public class CoreProcessor {
 	private void fileLoop(File file, Map hitsMap) throws Exception{
 		if(!file.exists() || file.getName().startsWith("."))
 			return;
-		Collection<StringBuffer> hits = new ArrayList<StringBuffer>();
 		if(file.isFile()){
 			if(rosolveFileWithPatten(file, hits)){
+				Collection<StringBuffer> hits = new ArrayList<StringBuffer>();
 				hitsMap.put(file.getPath(), hits);
 			}
 			return;
