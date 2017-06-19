@@ -42,9 +42,6 @@ public class CoreProcessor {
 	}
 	
 	private void run() throws Exception{
-		System.out.println("Find " + fileList.size() + " source files");
-		System.out.println("Find key word file " + keyWordFile.getName());
-		System.out.println("Start processing...");
 		analisis();
 	}
 	
@@ -84,6 +81,7 @@ public class CoreProcessor {
 			for(File file : fileList){
 				SwingUtilities.invokeLater(new Task(file, keywords));
 			}
+			System.out.println("All Task Has Started, Please Check Data Source Folder");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

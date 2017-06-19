@@ -1,22 +1,11 @@
 package com.zero.zexcel;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import com.zero.zexcel.util.XLSXCovertCSVReader;
 
 public class Task extends Thread {
 	
@@ -24,10 +13,8 @@ public class Task extends Thread {
 	
 	private final List<String> keywords;
 	
-	private Map<Integer, StringBuffer> out = new HashMap<Integer, StringBuffer>();
+	private final int min_col = 26;
 	
-	private Map<Sheet,Object> rs = new HashMap<Sheet,Object>();
-
 	public Task(File file, List<String> keywords) {
 		super();
 		this.file = file;
@@ -39,104 +26,90 @@ public class Task extends Thread {
 		try {
 			if(null == file || null == keywords || keywords.isEmpty())
 				return;
-			InputStream is = new FileInputStream(file);
-			Workbook wb = new SXSSFWorkbook();
-			for(int i = 0; i < wb.getNumberOfSheets(); i++){
-				Sheet sheet = wb.getSheetAt(i);
-				matchKeywords(sheet);
-				if(!out.isEmpty()){
-					rs.put(sheet, out);
-					out = new HashMap<Integer, StringBuffer>();
-				}
+			Collection<Object> data = XLSXCovertCSVReader.readExcel(file, min_col);
+			if(data == null || data.isEmpty())
+				return;
+			Collection<Object> processed = new ArrayList<Object>();
+			for(Object o : data){
+				List<StringBuffer> match = processData(o);
+				processed.add(match);
 			}
-			if(!rs.isEmpty())
-				write(wb);
-			wb.close();
+			writeResult(file.getAbsolutePath() + ".zero.xlsx", processed, 50000);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
+	private void writeResult(String path, Collection<Object> data, int maxSize){
+		XLSXCovertCSVReader.createExcelFile(path, data, maxSize);
+	}
+	
 	@SuppressWarnings("unchecked")
-	private void write(Workbook wb){
-		if(rs.isEmpty())
-			return;
-		for(Sheet sheet : rs.keySet()){
-			Map<Integer,StringBuffer> c = (Map<Integer, StringBuffer>) rs.get(sheet);
-			for(int i : c.keySet()){
-				Row row = sheet.getRow(i);
-				Cell o = row.createCell(row.getPhysicalNumberOfCells()+1);
-				o.setCellValue(c.get(i).toString());
-			}
-		}
-		try {
-			FileOutputStream fout = new FileOutputStream(file); 
-			wb.write(fout);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private void matchKeywords(Sheet sheet){
-		for(int i = 0; i < sheet.getPhysicalNumberOfRows(); i ++){
-			Row r = sheet.getRow(i);
-			processRow(r);
-		}
-	}
-	
-	private void processRow(Row row){
-		if(row == null)
-			return;
-		StringBuffer rowVal = compileCells(row);
-		if(rowVal == null)
-			return;
-		for(String word : keywords){
-			match(row.getRowNum(), rowVal, word);
-		}
-	}
-	
-	private StringBuffer compileCells(Row row){
-		if(row == null)
+	private List<StringBuffer> processData(Object o){
+		if(o == null)
 			return null;
-		StringBuffer rt = new StringBuffer();
-		for(int i = 0; i < row.getPhysicalNumberOfCells(); i++){
-			processCell(row.getCell(i), rt);
+		List<String[]> cur = (List<String[]>)o;
+		List<StringBuffer> match = new ArrayList<StringBuffer>();
+		for(String[] content : cur){
+			matchKeyWords(content, match);
 		}
-		return rt;
+		return match;
 	}
 	
-	private void processCell(Cell cell, StringBuffer rs){
-		String v = getCellValue(cell);
-		if(v == null || v.isEmpty())
+	private void matchKeyWords(String[] content, List<StringBuffer> match){
+		StringBuffer bf = compileString(content);
+		if("Empty Row".equalsIgnoreCase(bf.toString())){
+			match.add(bf);
 			return;
-		rs.append(v);
-	}
-	
-	private String getCellValue(Cell cell){
-		if(cell == null)
-			return null;
-		String rt = null;
-		try{
-			rt = cell.getStringCellValue();
-		}catch(Exception e){
-			try{
-				rt = String.valueOf(cell.getNumericCellValue());
-			}catch(Exception e1){
-			}
 		}
-		return rt;
+		StringBuffer matched = new StringBuffer();
+		for(String keyword : keywords){
+			match(bf, matched, keyword);
+		}
+		if(matched.length() == 0)
+			matched.append("Not Match");
+		match.add(matched);
 	}
 	
-	private void match(int key,StringBuffer rowVal, String keyword){
-		StringBuffer p = out.get(key) == null ? new StringBuffer() : out.get(key);
+	private StringBuffer compileString(String[] data){
+		StringBuffer bf = new StringBuffer();
+		if(data == null)
+			return bf.append("Empty Row");
+		for(String s : data)
+			bf.append(s);
+		if("".equals(bf.toString().trim()))
+			return bf.append("Empty Row");
+		return bf;
+	}
+	
+	private void match(StringBuffer rowVal,StringBuffer matched, String keyword){
 		StringBuffer c = new StringBuffer();
-		Matcher m = Pattern.compile("(.*?"+keyword+".*?)。").matcher(rowVal);
-		while(m.find()){
-			c.append(m.group(1) + "\r\n");
+		if(rowVal.toString().contains(keyword)){
+			c = processString(rowVal, keyword);
 		}
-		if(c.length() > 0){
-			out.put(key, p.append("\r\n").append(keyword).append(" :: \r\n ").append(c));
+		matched.append(c);
+	}
+	
+	private StringBuffer processString(StringBuffer s, String k){
+		StringBuffer rs = new StringBuffer();
+		if(s == null || k == null || !s.toString().contains(k))
+			return rs;
+		rs.append("Keyword:: ").append(k).append("\r\n");
+		String[] p = s.toString().split(k);
+		for(int i = 1; i < p.length; i ++){
+			rs.append(i).append(": ").append(cutString(p[i-1], 30, false))
+			.append(k).append(cutString(p[i], 30, true)).append("\r\n");
 		}
+		return rs;
+	}
+	
+	private String cutString(String s, int offset, boolean ispre){
+		if(s == null || s.length() <= offset)
+			return s;
+		if(ispre)
+			return s.substring(0, offset);
+		else
+			return s.substring(s.length() - offset + 1, s.length());
 	}
 	
 }
