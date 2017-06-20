@@ -126,13 +126,6 @@ public class XLSXCovertCSVReader {
 			rows.clear();// 每次读取都清空行集合
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see
-		 * org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String,
-		 * java.lang.String, java.lang.String, org.xml.sax.Attributes)
-		 */
 		public void startElement(String uri, String localName, String name, Attributes attributes) throws SAXException {
 
 			if ("inlineStr".equals(name) || "v".equals(name)) {
@@ -182,20 +175,12 @@ public class XLSXCovertCSVReader {
 
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String,
-		 * java.lang.String, java.lang.String)
-		 */
 		public void endElement(String uri, String localName, String name) throws SAXException {
 
 			String thisStr = null;
 
 			// v => contents of a cell
 			if ("v".equals(name)) {
-				// Process the value contents as required.
-				// Do now, as characters() may be called more than once
 				switch (nextDataType) {
 
 				case BOOL:
@@ -208,16 +193,11 @@ public class XLSXCovertCSVReader {
 					break;
 
 				case FORMULA:
-					// A formula could result in a string value,
-					// so always add double-quote characters.
-					// thisStr = '"' + value.toString() + '"';
 					thisStr = value.toString();
 					break;
 
 				case INLINESTR:
-					// TODO: have seen an example of this, so it's untested.
 					XSSFRichTextString rtsi = new XSSFRichTextString(value.toString());
-					// thisStr = '"' + rtsi.toString() + '"';
 					thisStr = rtsi.toString();
 					break;
 
@@ -226,7 +206,6 @@ public class XLSXCovertCSVReader {
 					try {
 						int idx = Integer.parseInt(sstIndex);
 						XSSFRichTextString rtss = new XSSFRichTextString(sharedStringsTable.getEntryAt(idx));
-						// thisStr = '"' + rtss.toString() + '"';
 						thisStr = rtss.toString();
 					} catch (NumberFormatException ex) {
 						output.println("Failed to parse SST index '" + sstIndex + "': " + ex.toString());
@@ -235,7 +214,6 @@ public class XLSXCovertCSVReader {
 
 				case NUMBER:
 					String n = value.toString();
-					// 判断是否是日期格式
 					if (HSSFDateUtil.isADateFormat(this.formatIndex, n)) {
 						Double d = Double.parseDouble(n);
 						Date date = HSSFDateUtil.getJavaDate(d);
@@ -252,31 +230,22 @@ public class XLSXCovertCSVReader {
 					break;
 				}
 
-				// Output after we've seen the string contents
-				// Emit commas for any fields that were missing on this row
 				if (lastColumnNumber == -1) {
 					lastColumnNumber = 0;
 				}
-				// 判断单元格的值是否为空
 				if (thisStr == null || "".equals(isCellNull)) {
-					isCellNull = true;// 设置单元格是否为空值
+					isCellNull = true;
 				}
 				record[thisColumn] = thisStr;
-				// Update column
 				if (thisColumn > -1)
 					lastColumnNumber = thisColumn;
 
 			} else if ("row".equals(name)) {
-
-				// Print out any missing commas if needed
 				if (minColumns > 0) {
-					// Columns are 0 based
 					if (lastColumnNumber == -1) {
 						lastColumnNumber = 0;
 					}
-					// if (isCellNull == false && record[0] != null
-					// && record[1] != null)// 判断是否空行
-					if (isCellNull == false)// 判断是否空行
+					if (isCellNull == false)
 					{
 						rows.add(record.clone());
 						isCellNull = false;
@@ -330,8 +299,6 @@ public class XLSXCovertCSVReader {
 
 	}
 
-	// /////////////////////////////////////
-
 	private OPCPackage xlsxPackage;
 	private int minColumns;
 	private PrintStream output;
@@ -346,11 +313,10 @@ public class XLSXCovertCSVReader {
 	 * @param minColumns
 	 *            The minimum number of columns to output, or -1 for no minimum
 	 */
-	public XLSXCovertCSVReader(OPCPackage pkg, PrintStream output, String sheetName, int minColumns) {
+	public XLSXCovertCSVReader(OPCPackage pkg, PrintStream output, int minColumns) {
 		this.xlsxPackage = pkg;
 		this.output = output;
 		this.minColumns = minColumns;
-		this.sheetName = sheetName;
 	}
 
 	/**
@@ -398,33 +364,24 @@ public class XLSXCovertCSVReader {
 		return rs;
 	}
 
-	/* *//**
-			 * 读取Excel
-			 * 
-			 * @param path
-			 *            文件路径
-			 * @param sheetName
-			 *            sheet名称
-			 * @param minColumns
-			 *            列总数
-			 * @return
-			 * @throws SAXException
-			 * @throws ParserConfigurationException
-			 * @throws OpenXML4JException
-			 * @throws IOException
-			 *//*
-			 * private static List<String[]> readerExcel(String path, String
-			 * sheetName, int minColumns) throws IOException,
-			 * OpenXML4JException, ParserConfigurationException, SAXException {
-			 * OPCPackage p = OPCPackage.open(path, PackageAccess.READ);
-			 * XLSXCovertCSVReader xlsx2csv = new XLSXCovertCSVReader(p,
-			 * System.out, sheetName, minColumns); List<String[]> list =
-			 * xlsx2csv.process(); p.close(); return list; }
-			 */
-
+	/**
+	 * 读取Excel
+	 * 
+	 * @param path
+	 *            文件路径
+	 * @param sheetName
+	 *            sheet名称
+	 * @param minColumns
+	 *            列总数
+	 * @return
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws OpenXML4JException
+	 * @throws IOException
+	 */
 	public static Collection<Object> readExcel(File file, int minColumns) throws Exception {
 		OPCPackage p = OPCPackage.open(file, PackageAccess.READ);
-		XLSXCovertCSVReader xlsx2csv = new XLSXCovertCSVReader(p, System.out, "", minColumns);
+		XLSXCovertCSVReader xlsx2csv = new XLSXCovertCSVReader(p, System.out, minColumns);
 		Collection<Object> rs = xlsx2csv.process();
 		p.close();
 		return rs;
