@@ -36,6 +36,7 @@ public class KeywordLoader extends SwingWorker<Object, Object> {
 	private void loadKeyWords() throws Exception{
 		InputStream is = new FileInputStream(processor.getKeyWordFile());
 		Workbook wb = new XSSFWorkbook(is);
+		is.close();
 		int sheet_count = wb.getNumberOfSheets();
 		for(int i = 0; i < sheet_count; i++){
 			Sheet sheet = wb.getSheetAt(i);

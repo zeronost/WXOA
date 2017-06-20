@@ -64,7 +64,7 @@ public class MainFrame extends JFrame {
 	}
 
 	protected void initIcon() {
-		ImageIcon icon = new ImageIcon(getClass().getResource("./ui/icon.png"));
+		ImageIcon icon = new ImageIcon(getClass().getResource("ui/icon.png"));
 		this.setIconImage(icon.getImage());
 	}
 
