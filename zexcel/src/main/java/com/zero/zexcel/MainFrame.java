@@ -9,15 +9,16 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -37,10 +38,10 @@ public class MainFrame extends JFrame {
 
 	private JTextField keyPath = new JTextField();
 
-	private JButton analysis = new JButton("Start Analysis");
-
-	private JTextArea console = new JTextArea();
-
+	private JButton analysis = new JButton("Start Process");
+	
+	private JProgressBar progressBar = new JProgressBar(JProgressBar.HORIZONTAL);
+	
 	private static MainFrame frame;
 
 	private MainFrame() {
@@ -58,7 +59,7 @@ public class MainFrame extends JFrame {
 			frame = new MainFrame();
 		}
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setPreferredSize(new Dimension(800, 600));
+		frame.setPreferredSize(new Dimension(800, 350));
 		frame.initIcon();
 		frame.applyContent();
 		frame.setVisible(true);
@@ -85,7 +86,7 @@ public class MainFrame extends JFrame {
 		applyDefaultLayout(contentPane);
 		applyTextField();
 		applyButton();
-		applyConsole();
+		applyProgessBar();
 	}
 
 	private void applyTextField() {
@@ -106,15 +107,14 @@ public class MainFrame extends JFrame {
 		analysis.addActionListener(new analysisAction());
 		contentPane.add(analysis);
 	}
-
-	private void applyConsole() {
-		console.setBounds(new Rectangle(new Point(0, 0), new Dimension(770, 300)));
-		console.setEditable(false);
-		console.setBackground(Color.WHITE);
-		JScrollPane scroll = new JScrollPane(console);
-		scroll.setBounds(new Rectangle(new Point(10, 250), new Dimension(770, 300)));
-		contentPane.add(scroll);
-		Console print = new Console(System.out, console);
+	
+	private void applyProgessBar(){
+		progressBar.setBounds(new Rectangle(new Point(0, 299), new Dimension(800, 18)));
+		progressBar.setStringPainted(true);
+		progressBar.setString("");
+		progressBar.setVisible(false);
+		contentPane.add(progressBar);
+		Console print = new Console(System.out, progressBar);
 		System.setOut(print);
 		System.setErr(print);
 	}
@@ -124,25 +124,52 @@ public class MainFrame extends JFrame {
 			return;
 		container.setLayout(DEFAULT_LAYOUT);
 	}
-
+	
+	private void onAnalisisStart(){
+		final String s = sourcePath.getText().trim();
+		final String k = keyPath.getText().trim();
+		if ("".equals(s) || "".equals(k)) {
+			System.out.println("Please select source excels path and key word file");
+			return;
+		}
+		beginAnalisisTask(s,k);
+	}
+	
+	private Object beginAnalisisTask(final String s, final String k){
+		try {
+			disableProcess();
+			System.out.println("Start process... ");
+			new CoreProcessor(this, s, k).process();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public void initProgressBar(int min, int max){
+		this.progressBar.setMinimum(min);
+		this.progressBar.setMaximum(max);
+	}
+	
+	public void setProgressValue(int i){
+		this.progressBar.setValue(i);
+	}
+	
+	private void disableProcess(){
+		this.analysis.setEnabled(false);
+		this.progressBar.setValue(0);
+		this.progressBar.setVisible(true);
+	}
+	
+	public void enableProcess(){
+		this.analysis.setEnabled(true);
+		this.progressBar.setValue(0);
+		this.progressBar.setVisible(false);
+	}
+	
 	private class analysisAction implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			final String s = sourcePath.getText().trim();
-			final String k = keyPath.getText().trim();
-			if ("".equals(s) || "".equals(k)) {
-				System.out.println("Please select source excels path and key word file");
-				return;
-			}
-			System.out.println("Start analysis... ");
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					try {
-						new CoreProcessor().process(s, k);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			});
+			onAnalisisStart();
 		}
 	}
 }
