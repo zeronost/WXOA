@@ -1,6 +1,5 @@
 package com.zero.zexcel;
 
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.LayoutManager;
@@ -9,20 +8,17 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import org.pushingpixels.substance.api.skin.SubstanceNebulaBrickWallLookAndFeel;
+import org.pushingpixels.substance.api.skin.SubstanceBusinessBlueSteelLookAndFeel;
 
 public class MainFrame extends JFrame {
 
@@ -73,7 +69,7 @@ public class MainFrame extends JFrame {
 	}
 
 	private static void initTheme() throws UnsupportedLookAndFeelException {
-		UIManager.setLookAndFeel(new SubstanceNebulaBrickWallLookAndFeel());
+		UIManager.setLookAndFeel(new SubstanceBusinessBlueSteelLookAndFeel());
 		setDefaultLookAndFeelDecorated(true);
 	}
 
