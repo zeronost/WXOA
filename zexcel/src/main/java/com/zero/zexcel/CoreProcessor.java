@@ -1,21 +1,10 @@
 package com.zero.zexcel;
 
-import java.awt.Point;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.SwingUtilities;
-
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import javax.swing.SwingWorker;
 
 public class CoreProcessor {
 	
@@ -23,7 +12,7 @@ public class CoreProcessor {
 	
 	private String patten;
 	
-	private String key_mark="关键词";
+	private String keyMark = "关键词";
 	
 	private File keyWordFile;
 	
@@ -31,18 +20,27 @@ public class CoreProcessor {
 	
 	private List<String> keywords = new ArrayList<String>();
 	
-	public void process(String path, String patten) throws Exception{
+	private int processed = 0;
+	
+	private MainFrame frame;
+	
+	public CoreProcessor(MainFrame frame, String path, String patten){
+		this.frame = frame;
 		this.path = path;
 		this.patten = patten;
-		initFileList();
-		initKeyWordFile();
-		if(!needProcess())
-			return;
-		run();
 	}
 	
-	private void run() throws Exception{
-		analisis();
+	public void process() throws Exception{
+		initFileList();
+		initKeyWordFile();
+		if(!needProcess()){
+			System.out.println("No data source file or keyword file finded, process stoped.");
+			frame.enableProcess();
+			return;
+		}
+		frame.initProgressBar(0, fileList.size() + 1);
+		frame.setProgressValue(1);
+		startTask();
 	}
 	
 	private void initFileList() throws Exception{
@@ -50,7 +48,7 @@ public class CoreProcessor {
 			return;
 		File root = new File(path);
 		if(root == null || !root.isDirectory())
-			throw new Exception(path + " is not a correct path");
+			return;
 		File[] files = root.listFiles();
 		if(null == files || files.length == 0){
 			return;
@@ -59,9 +57,6 @@ public class CoreProcessor {
 			if(isExcel(f)){
 				fileList.add(f);
 			}
-		}
-		if(fileList.isEmpty()){
-			return;
 		}
 	}
 	
@@ -75,61 +70,35 @@ public class CoreProcessor {
 		keyWordFile = keyFile;
 	}
 	
-	private void analisis(){
+	private void startTask(){
+		SwingWorker<Object,Object> task = new KeywordLoader(this);
+		task.execute();
+	}
+	
+	public void startSubTask(){
 		try {
-			loadKeyWords();
 			for(File file : fileList){
-				SwingUtilities.invokeLater(new Task(file, keywords));
+				SwingWorker<Object,Object> subtask = new SubTask<Object, Object>(file, keywords, this);
+				subtask.execute();
 			}
-			System.out.println("All Task Has Started, Please Check Data Source Folder");
+			System.out.println("All tasks have been started and running, Please wait... ");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	private void loadKeyWords() throws Exception{
-		InputStream is = new FileInputStream(keyWordFile);
-		Workbook wb = new XSSFWorkbook(is);
-		int sheet_count = wb.getNumberOfSheets();
-		for(int i = 0; i < sheet_count; i++){
-			Sheet sheet = wb.getSheetAt(i);
-			Point keyPoint = getKeyPoint(sheet);
-			fillKeyWords(sheet, keyPoint);
-		}
-		wb.close();
+	public synchronized void FinishOneTask(){
+		processed ++;
+		this.frame.setProgressValue(processed+1);
 	}
 	
-	private Point getKeyPoint(Sheet sheet){
-		Point keyPoint = null;
-		for(int i = 0; i<sheet.getPhysicalNumberOfRows(); i ++){
-			Row r = sheet.getRow(i);
-			for(int j = 0; j < r.getPhysicalNumberOfCells(); j++){
-				Cell c = r.getCell(j);
-				if(key_mark.equals(c.getStringCellValue())){
-					keyPoint = new Point(i,j);
-					break;
-				}
-			}
-			if(null != keyPoint)
-				break;
-		}
-		return keyPoint;
+	public boolean isComplete(){
+		return processed == fileList.size();
 	}
 	
-	private void fillKeyWords(Sheet sheet, Point keyPoint){
-		if(sheet == null || keyPoint == null)
-			return;
-		for(int i = keyPoint.x + 1; i < sheet.getPhysicalNumberOfRows(); i++){
-			Cell cell = sheet.getRow(i).getCell(keyPoint.y);
-			if(null == cell)
-				continue;
-			String val = cell.getStringCellValue();
-			if(null == val || "".equals(val.trim()))
-				continue;
-			if(!keywords.contains(val)){
-				keywords.add(val);
-			}
-		}
+	public void onComplete(){
+		System.out.println("Process complete");
+		frame.enableProcess();
 	}
 	
 	private boolean isExcel(File file){
@@ -141,8 +110,9 @@ public class CoreProcessor {
 	}
 	
 	private boolean needProcess(){
-		if(null == fileList || fileList.isEmpty() || null == keyWordFile)
+		if(null == fileList || fileList.isEmpty() || null == keyWordFile){
 			return false;
+		}
 		return true;
 	}
 	
@@ -162,19 +132,19 @@ public class CoreProcessor {
 		this.patten = patten;
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unused" })
-	private void log(String info, Object obj){
-		StringBuffer bf = new StringBuffer();
-		bf.append(info);
-		if(obj == null)
-			bf.append(" NULL");
-		else if(obj instanceof Collection){
-			Iterator itr = ((Collection)obj).iterator();
-			while(itr.hasNext())
-				bf.append(itr.next().toString() + "\r\n");
-		}else{
-			bf.append(obj.toString());
-		}
-		System.out.println(bf.toString());
+	public File getKeyWordFile() {
+		return keyWordFile;
+	}
+
+	public String getKeyMark() {
+		return keyMark;
+	}
+	
+	public List<String> getKeywords() {
+		return keywords;
+	}
+
+	public void setKeywords(List<String> keywords) {
+		this.keywords = keywords;
 	}
 }
