@@ -147,4 +147,8 @@ public class CoreProcessor {
 	public void setKeywords(List<String> keywords) {
 		this.keywords = keywords;
 	}
+	
+	public MainFrame getFrame(){
+		return this.frame;
+	}
 }

@@ -20,6 +20,8 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import org.pushingpixels.substance.api.skin.SubstanceBusinessBlueSteelLookAndFeel;
 
+import com.zero.zexcel.util.SplitMethod;
+
 public class MainFrame extends JFrame {
 
 	private static final long serialVersionUID = 1L;
@@ -37,6 +39,10 @@ public class MainFrame extends JFrame {
 	private JButton analysis = new JButton("Start Process");
 	
 	private JProgressBar progressBar = new JProgressBar(JProgressBar.HORIZONTAL);
+	
+	private int offset = 0;
+	
+	private SplitMethod method = SplitMethod.NUM;
 	
 	private static MainFrame frame;
 
@@ -64,7 +70,7 @@ public class MainFrame extends JFrame {
 	}
 
 	protected void initIcon() {
-		ImageIcon icon = new ImageIcon(getClass().getResource("ui/icon.png"));
+		ImageIcon icon = new ImageIcon(getClass().getResource("/ui/icon/icon.png"));
 		this.setIconImage(icon.getImage());
 	}
 
@@ -112,7 +118,6 @@ public class MainFrame extends JFrame {
 		contentPane.add(progressBar);
 		Console print = new Console(System.out, progressBar);
 		System.setOut(print);
-		System.setErr(print);
 	}
 
 	private static void applyDefaultLayout(Container container) {
@@ -161,6 +166,14 @@ public class MainFrame extends JFrame {
 		this.analysis.setEnabled(true);
 		this.progressBar.setValue(0);
 		this.progressBar.setVisible(false);
+	}
+	
+	public int getOffset(){
+		return this.offset;
+	}
+	
+	public SplitMethod getSplitMethod(){
+		return this.method;
 	}
 	
 	private class analysisAction implements ActionListener {

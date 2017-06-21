@@ -10,27 +10,34 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
+import org.apache.poi.hssf.util.HSSFColor.HSSFColorPredefined;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.openxml4j.opc.PackageAccess;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Color;
 import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.model.StylesTable;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -394,7 +401,7 @@ public class XLSXCovertCSVReader {
 		System.out.println(list.size());
 	}
 
-	public static boolean createExcelFile(String path, Collection<Object> data, int maxSize) {
+	public static boolean createExcelFile(String path, Collection<Object> data,List<String> header, int maxSize) {
 		boolean isCreateSuccess = false;
 		SXSSFWorkbook workbook = null;
 		try {
@@ -405,7 +412,7 @@ public class XLSXCovertCSVReader {
 		if (workbook != null) {
 			int index = 1;
 			for (Object sheet : data) {
-				createSheetAndFill(workbook, sheet, "matcheResult " + index);
+				createSheetAndFill(workbook, sheet, header, "matcheResult " + index);
 				index++;
 			}
 			try {
@@ -422,14 +429,32 @@ public class XLSXCovertCSVReader {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static void createSheetAndFill(Workbook workbook, Object data, String name) {
+	private static void createSheetAndFill(Workbook workbook, Object data,List<String> header, String name) {
 		Sheet sheet = workbook.createSheet(name);
 		sheet.setColumnWidth(0, 12000);
-		List<StringBuffer> list = (List<StringBuffer>) data;
+		List<Map<String,StringBuffer>> list = (List<Map<String,StringBuffer>>) data;
+		createHeader(sheet, header);
+		StringBuffer cusor = null;
 		for (int r = 0; r < list.size(); r++) {
-			Row row = sheet.createRow(r);
-			Cell cell = row.createCell(0, CellType.STRING);
-			cell.setCellValue(list.get(r).toString());
+			Row row = sheet.createRow(r+1);
+			for(int c = 0; c < header.size(); c++){
+				Cell cell = row.createCell(c, CellType.STRING);
+				cusor = list.get(r).get(header.get(c));
+				cell.setCellValue(cusor == null ? "N/A" : cusor.toString());
+			}
+		}
+	}
+	
+	private static void createHeader(Sheet sheet, List<String> header){
+		Row row = sheet.createRow(0);
+		CellStyle style = sheet.getWorkbook().createCellStyle();
+		style.setAlignment(HorizontalAlignment.CENTER);
+		style.setVerticalAlignment(VerticalAlignment.CENTER);
+		style.setFillBackgroundColor(HSSFColorPredefined.LIGHT_BLUE.getIndex());
+		row.setRowStyle(style);
+		for(int c = 0; c < header.size(); c++){
+			Cell cell = row.createCell(c,CellType.STRING);
+			cell.setCellValue(header.get(c));
 		}
 	}
 }

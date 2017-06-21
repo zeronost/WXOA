@@ -3,10 +3,13 @@ package com.zero.zexcel;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.SwingWorker;
 
+import com.zero.zexcel.util.SplitMethod;
 import com.zero.zexcel.util.XLSXCovertCSVReader;
 
 public class SubTask<T, V> extends SwingWorker<T, V> {
@@ -19,6 +22,10 @@ public class SubTask<T, V> extends SwingWorker<T, V> {
 	
 	private String result;
 	
+	private final int offset;
+	
+	private final SplitMethod method;
+	
 	private CoreProcessor currentProcessor;
 	
 
@@ -27,6 +34,8 @@ public class SubTask<T, V> extends SwingWorker<T, V> {
 		this.file = file;
 		this.keywords = keywords;
 		this.currentProcessor = processor;
+		this.offset = processor.getFrame().getOffset();
+		this.method = processor.getFrame().getSplitMethod();
 	}
 
 	@Override
@@ -39,7 +48,7 @@ public class SubTask<T, V> extends SwingWorker<T, V> {
 				return null;
 			Collection<Object> processed = new ArrayList<Object>();
 			for(Object o : data){
-				List<StringBuffer> match = processData(o);
+				List<Map<String,StringBuffer>> match = processData(o);
 				processed.add(match);
 			}
 			result = file.getAbsolutePath() + ".zero.xlsx";
@@ -52,82 +61,53 @@ public class SubTask<T, V> extends SwingWorker<T, V> {
 	
 	@Override
 	protected void done(){
-		System.out.println("Task process file::  " + file.getName() + " complete! The result is " + result);
+		System.out.println("Task process file::  " + file.getName() + " complete!");
 		currentProcessor.FinishOneTask();
 		if(currentProcessor.isComplete())
 			currentProcessor.onComplete();
 	}
 	
 	private void writeResult(String path, Collection<Object> data, int maxSize){
-		XLSXCovertCSVReader.createExcelFile(path, data, maxSize);
+		XLSXCovertCSVReader.createExcelFile(path, data, keywords, maxSize);
 	}
 	
 	@SuppressWarnings("unchecked")
-	private List<StringBuffer> processData(Object o){
+	private List<Map<String,StringBuffer>> processData(Object o){
 		if(o == null)
 			return null;
 		List<String[]> cur = (List<String[]>)o;
-		List<StringBuffer> match = new ArrayList<StringBuffer>();
+		List<Map<String,StringBuffer>> match = new ArrayList<Map<String,StringBuffer>>();
 		for(String[] content : cur){
 			matchKeyWords(content, match);
 		}
 		return match;
 	}
 	
-	private void matchKeyWords(String[] content, List<StringBuffer> match){
+	private void matchKeyWords(String[] content, List<Map<String, StringBuffer>> match){
 		StringBuffer bf = compileString(content);
-		if("Empty Row".equalsIgnoreCase(bf.toString())){
-			match.add(bf);
-			return;
-		}
-		StringBuffer matched = new StringBuffer();
+		Map<String, StringBuffer> matched = new HashMap<String,StringBuffer>();
 		for(String keyword : keywords){
 			match(bf, matched, keyword);
 		}
-		if(matched.length() == 0)
-			matched.append("Not Match");
 		match.add(matched);
 	}
 	
 	private StringBuffer compileString(String[] data){
 		StringBuffer bf = new StringBuffer();
 		if(data == null)
-			return bf.append("Empty Row");
+			return bf;
 		for(String s : data)
 			bf.append(s);
-		if("".equals(bf.toString().trim()))
-			return bf.append("Empty Row");
 		return bf;
 	}
 	
-	private void match(StringBuffer rowVal,StringBuffer matched, String keyword){
-		StringBuffer c = new StringBuffer();
-		if(rowVal.toString().contains(keyword)){
-			c = processString(rowVal, keyword);
-		}
-		matched.append(c);
+	private void match(StringBuffer rowVal, Map<String,StringBuffer> matched, String keyword){
+		StringBuffer c = processString(rowVal, keyword);
+		if(c != null)
+			matched.put(keyword, c);
 	}
 	
 	private StringBuffer processString(StringBuffer s, String k){
-		StringBuffer rs = new StringBuffer();
-		if(s == null || k == null || !s.toString().contains(k))
-			return rs;
-		rs.append("Keyword:: ").append(k).append("\r\n");
-		String[] p = s.toString().split(k);
-		for(int i = 1; i < p.length; i ++){
-			rs.append(i).append(": ").append(cutString(p[i-1], 30, false))
-			.append(k).append(cutString(p[i], 30, true)).append("\r\n");
-		}
-		return rs;
+		return method.process(s, k, offset);
 	}
-	
-	private String cutString(String s, int offset, boolean ispre){
-		if(s == null || s.length() <= offset)
-			return s;
-		if(ispre)
-			return s.substring(0, offset);
-		else
-			return s.substring(s.length() - offset + 1, s.length());
-	}
-
 }
