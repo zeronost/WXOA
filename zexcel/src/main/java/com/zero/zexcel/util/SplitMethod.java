@@ -8,7 +8,7 @@ public enum SplitMethod {
 	private String description;
 	private static final String PUNTURATION = "[。；？！【】.;?!]";
 
-	private static final int DEFAULT_OFFSET = 20;
+	private static final int DEFAULT_OFFSET = 10;
 
 	private SplitMethod(int key, String desc) {
 		this.key = key;
