@@ -44,7 +44,6 @@ public class CoreProcessor {
 		}
 		createResultFolder();
 		frame.initProgressBar(0, fileList.size() + 1);
-		frame.setProgressValue(1);
 		startTask();
 	}
 	
@@ -99,11 +98,11 @@ public class CoreProcessor {
 	
 	public synchronized void FinishOneTask(){
 		processed ++;
-		this.frame.setProgressValue(processed+1);
+		this.frame.setProgressValue(processed);
 	}
 	
 	public boolean isComplete(){
-		return processed == fileList.size();
+		return processed == fileList.size() + 1;
 	}
 	
 	public void onComplete(){
