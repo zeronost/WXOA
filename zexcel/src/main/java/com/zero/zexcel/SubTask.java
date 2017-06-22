@@ -36,6 +36,7 @@ public class SubTask<T, V> extends SwingWorker<T, V> {
 		this.currentProcessor = processor;
 		this.offset = processor.getFrame().getOffset();
 		this.method = processor.getFrame().getSplitMethod();
+		this.result = processor.getResultFolder().getAbsolutePath();
 	}
 
 	@Override
@@ -48,10 +49,10 @@ public class SubTask<T, V> extends SwingWorker<T, V> {
 				return null;
 			Collection<Object> processed = new ArrayList<Object>();
 			for(Object o : data){
-				List<Map<String,StringBuffer>> match = processData(o);
+				List<Map<String,StringBuilder>> match = processData(o);
 				processed.add(match);
 			}
-			result = file.getAbsolutePath() + ".zero.xlsx";
+			result = result+"\\" + file.getName() + ".zero.xlsx";
 			writeResult(result, processed, 50000);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -72,28 +73,31 @@ public class SubTask<T, V> extends SwingWorker<T, V> {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private List<Map<String,StringBuffer>> processData(Object o){
+	private List<Map<String,StringBuilder>> processData(Object o){
 		if(o == null)
 			return null;
 		List<String[]> cur = (List<String[]>)o;
-		List<Map<String,StringBuffer>> match = new ArrayList<Map<String,StringBuffer>>();
+		List<Map<String,StringBuilder>> match = new ArrayList<Map<String,StringBuilder>>();
 		for(String[] content : cur){
 			matchKeyWords(content, match);
 		}
 		return match;
 	}
 	
-	private void matchKeyWords(String[] content, List<Map<String, StringBuffer>> match){
-		StringBuffer bf = compileString(content);
-		Map<String, StringBuffer> matched = new HashMap<String,StringBuffer>();
+	private void matchKeyWords(String[] content, List<Map<String, StringBuilder>> match){
+		StringBuilder bf = compileString(content);
+		Map<String, StringBuilder> matched = new HashMap<String,StringBuilder>();
 		for(String keyword : keywords){
 			match(bf, matched, keyword);
 		}
-		match.add(matched);
+		if(!matched.isEmpty())
+			match.add(matched);
+		else
+			match.add(null);
 	}
 	
-	private StringBuffer compileString(String[] data){
-		StringBuffer bf = new StringBuffer();
+	private StringBuilder compileString(String[] data){
+		StringBuilder bf = new StringBuilder();
 		if(data == null)
 			return bf;
 		for(String s : data)
@@ -101,13 +105,13 @@ public class SubTask<T, V> extends SwingWorker<T, V> {
 		return bf;
 	}
 	
-	private void match(StringBuffer rowVal, Map<String,StringBuffer> matched, String keyword){
-		StringBuffer c = processString(rowVal, keyword);
+	private void match(StringBuilder rowVal, Map<String,StringBuilder> matched, String keyword){
+		StringBuilder c = processString(rowVal, keyword);
 		if(c != null)
 			matched.put(keyword, c);
 	}
 	
-	private StringBuffer processString(StringBuffer s, String k){
+	private StringBuilder processString(StringBuilder s, String k){
 		return method.process(s, k, offset);
 	}
 }
