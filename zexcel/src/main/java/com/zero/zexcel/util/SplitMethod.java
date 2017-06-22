@@ -52,7 +52,7 @@ public enum SplitMethod {
 		if (ispre)
 			return s.substring(0, offset);
 		else
-			return s.substring(s.length() - offset + 1, s.length());
+			return s.substring(s.length() - offset, s.length());
 	}
 
 	private StringBuilder punProcess(StringBuilder s, String k) {
