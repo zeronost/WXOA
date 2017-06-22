@@ -8,8 +8,10 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -35,14 +37,16 @@ public class MainFrame extends JFrame {
 	private JTextField sourcePath = new JTextField();
 
 	private JTextField keyPath = new JTextField();
+	
+	private JComboBox<SplitMethod> methodList = new JComboBox<SplitMethod>();
+	
+	private JLabel offset;
+	
+	private JComboBox<Integer> offsets = new JComboBox<Integer>();
 
 	private JButton analysis = new JButton("Start Process");
 	
 	private JProgressBar progressBar = new JProgressBar(JProgressBar.HORIZONTAL);
-	
-	private int offset = 0;
-	
-	private SplitMethod method = SplitMethod.NUM;
 	
 	private static MainFrame frame;
 
@@ -87,25 +91,46 @@ public class MainFrame extends JFrame {
 	private void applyPanel() {
 		applyDefaultLayout(contentPane);
 		applyTextField();
+		applyMethodList();
+		applyOffsets();
 		applyButton();
 		applyProgessBar();
 	}
 
 	private void applyTextField() {
-		JLabel l_source = new JLabel("Source Excel Folder:");
-		l_source.setBounds(new Rectangle(new Point(40, 50), new Dimension(120, 25)));
+		JLabel l_source = createLabel("Source Folder: ", new Rectangle(new Point(40, 50), new Dimension(120, 25)));
 		sourcePath.setBounds(new Rectangle(new Point(170, 50), new Dimension(500, 25)));
 		contentPane.add(l_source);
 		contentPane.add(sourcePath);
-		JLabel l_key = new JLabel("KeyWord Excel:");
-		l_key.setBounds(new Rectangle(new Point(40, 150), new Dimension(120, 25)));
-		keyPath.setBounds(new Rectangle(new Point(170, 150), new Dimension(500, 25)));
+		JLabel l_key = createLabel("Keyword Excel: ", new Rectangle(new Point(40, 90), new Dimension(120, 25)));
+		keyPath.setBounds(new Rectangle(new Point(170, 90), new Dimension(500, 25)));
 		contentPane.add(l_key);
 		contentPane.add(keyPath);
 	}
+	
+	private void applyMethodList(){
+		JLabel l_list = createLabel("Split Method: ", new Rectangle(new Point(40, 130), new Dimension(120, 25)));
+		methodList.setBounds(new Rectangle(new Point(170, 130), new Dimension(150, 25)));
+		DefaultComboBoxModel<SplitMethod> data = new DefaultComboBoxModel<SplitMethod>();
+		data.addElement(SplitMethod.NUM);
+		data.addElement(SplitMethod.PUN);
+		methodList.setModel(data);
+		methodList.addActionListener(new splitMethodAction());
+		contentPane.add(l_list);
+		contentPane.add(methodList);
+	}
+	
+	private void applyOffsets(){
+		offset = createLabel("Offset: ", new Rectangle(new Point(390, 130), new Dimension(120, 25)));
+		offsets.setBounds(new Rectangle(new Point(520, 130), new Dimension(150, 25)));
+		DefaultComboBoxModel<Integer> data = new DefaultComboBoxModel<Integer>(new Integer[]{5,10,15,20,25,30});
+		offsets.setModel(data);
+		contentPane.add(offset);
+		contentPane.add(offsets);
+	}
 
 	private void applyButton() {
-		analysis.setBounds(new Rectangle(new Point(340, 200), new Dimension(120, 25)));
+		analysis.setBounds(new Rectangle(new Point(340, 220), new Dimension(120, 25)));
 		analysis.addActionListener(new analysisAction());
 		contentPane.add(analysis);
 	}
@@ -124,6 +149,12 @@ public class MainFrame extends JFrame {
 		if (null == container)
 			return;
 		container.setLayout(DEFAULT_LAYOUT);
+	}
+	
+	private JLabel createLabel(String name, Rectangle bounds){
+		JLabel rt = new JLabel(name, JLabel.RIGHT);
+		rt.setBounds(bounds);
+		return rt;
 	}
 	
 	private void onAnalisisStart(){
@@ -169,16 +200,32 @@ public class MainFrame extends JFrame {
 	}
 	
 	public int getOffset(){
-		return this.offset;
+		return (Integer) this.offsets.getSelectedItem();
 	}
 	
 	public SplitMethod getSplitMethod(){
-		return this.method;
+		return (SplitMethod) this.methodList.getSelectedItem();
+	}
+	
+	private void onSplitMethodAction(){
+		if(((SplitMethod)methodList.getSelectedItem()).isNum()){
+			offsets.setVisible(true);
+			offset.setVisible(true);
+		}else{
+			offsets.setVisible(false);
+			offset.setVisible(false);
+		}
 	}
 	
 	private class analysisAction implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			onAnalisisStart();
+		}
+	}
+	
+	private class splitMethodAction implements ActionListener{
+		public void actionPerformed(ActionEvent e) {
+			onSplitMethodAction();
 		}
 	}
 }
