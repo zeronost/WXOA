@@ -1,7 +1,9 @@
 package com.zero.zexcel;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.SwingWorker;
@@ -22,6 +24,8 @@ public class CoreProcessor {
 	
 	private int processed = 0;
 	
+	private File resultFolder = null;
+	
 	private MainFrame frame;
 	
 	public CoreProcessor(MainFrame frame, String path, String patten){
@@ -38,9 +42,15 @@ public class CoreProcessor {
 			frame.enableProcess();
 			return;
 		}
+		createResultFolder();
 		frame.initProgressBar(0, fileList.size() + 1);
 		frame.setProgressValue(1);
 		startTask();
+	}
+	
+	private void createResultFolder(){
+		resultFolder = new File(fileList.get(0).getParent()+"\\OUT_"+new SimpleDateFormat("YYYYMMddhhmmss").format(new Date()));
+		resultFolder.mkdir();
 	}
 	
 	private void initFileList() throws Exception{
@@ -150,5 +160,9 @@ public class CoreProcessor {
 	
 	public MainFrame getFrame(){
 		return this.frame;
+	}
+	
+	public File getResultFolder(){
+		return this.resultFolder;
 	}
 }
