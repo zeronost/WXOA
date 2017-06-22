@@ -101,7 +101,7 @@ public class SubTask<T, V> extends SwingWorker<T, V> {
 		if(data == null)
 			return bf;
 		for(String s : data)
-			bf.append(s);
+			bf.append(s==null?"":s);
 		return bf;
 	}
 	
