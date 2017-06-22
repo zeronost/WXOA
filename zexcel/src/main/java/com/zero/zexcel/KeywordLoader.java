@@ -24,12 +24,15 @@ public class KeywordLoader extends SwingWorker<Object, Object> {
 
 	@Override
 	protected Object doInBackground() throws Exception {
+		System.out.println("Loading keywords...");
 		loadKeyWords();
 		return processor;
 	}
 	
 	@Override
 	protected void done(){
+		System.out.println("Keywords load complete");
+		processor.FinishOneTask();
 		processor.startSubTask();
 	}
 	
