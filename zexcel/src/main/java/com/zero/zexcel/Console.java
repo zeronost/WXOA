@@ -3,16 +3,14 @@ package com.zero.zexcel;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
+import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
-import javax.swing.text.JTextComponent;
 
 public class Console extends PrintStream {
 	
-	private JTextComponent text;
-	
-	private StringBuffer sb = new StringBuffer();
+	private JProgressBar text;
 
-	public Console(OutputStream out, JTextComponent text) {
+	public Console(OutputStream out, JProgressBar text) {
 		super(out);
 		this.text = text;
 	}
@@ -22,10 +20,9 @@ public class Console extends PrintStream {
 		final String message = new String(buff, off, len);
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run() {
-				if(sb.length() > 10240)
-					sb.setLength(0);
-				sb.append(message.trim()+"\r\n");
-				text.setText(sb.toString());
+				if(message.trim().isEmpty())
+					return;
+				text.setString(message.trim()+"\r\n");
 			}
 		});
 	}
