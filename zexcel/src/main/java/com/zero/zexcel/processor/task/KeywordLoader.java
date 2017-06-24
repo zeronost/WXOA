@@ -1,4 +1,4 @@
-package com.zero.zexcel;
+package com.zero.zexcel.processor.task;
 
 import java.awt.Point;
 import java.io.FileInputStream;
@@ -13,13 +13,17 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.zero.zexcel.processor.api.Processor;
+import com.zero.zexcel.processor.impl.KeywordMatchProcessor;
+
+
 public class KeywordLoader extends SwingWorker<Object, Object> {
 	
-	private CoreProcessor processor;
+	private KeywordMatchProcessor processor;
 	
-	public KeywordLoader(CoreProcessor processor){
+	public KeywordLoader(Processor processor){
 		super();
-		this.processor = processor;
+		this.processor = (KeywordMatchProcessor)processor;
 	}
 
 	@Override
@@ -33,7 +37,7 @@ public class KeywordLoader extends SwingWorker<Object, Object> {
 	protected void done(){
 		System.out.println("Keywords load complete");
 		processor.FinishOneTask();
-		processor.startSubTask();
+		processor.startKeywordMatcher();
 	}
 	
 	private void loadKeyWords() throws Exception{

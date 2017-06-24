@@ -249,8 +249,7 @@ public class XLSXCovertCSVReader {
 					if (lastColumnNumber == -1) {
 						lastColumnNumber = 0;
 					}
-					if (isCellNull == false)
-					{
+					if (isCellNull == false) {
 						rows.add(record.clone());
 						isCellNull = false;
 						for (int i = 0; i < record.length; i++) {
@@ -326,7 +325,6 @@ public class XLSXCovertCSVReader {
 	/**
 	 * Parses and shows the content of one sheet using the specified styles and
 	 * shared-strings tables.
-	 * 
 	 * @param styles
 	 * @param strings
 	 * @param sheetInputStream
@@ -391,7 +389,7 @@ public class XLSXCovertCSVReader {
 		return rs;
 	}
 
-	public static boolean createExcelFile(String path, Collection<Object> data,List<String> header, int maxSize) {
+	public static boolean createExcelFile(String path, Collection<Object> data, List<String> header, int maxSize) {
 		boolean isCreateSuccess = false;
 		SXSSFWorkbook workbook = null;
 		try {
@@ -419,32 +417,32 @@ public class XLSXCovertCSVReader {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static void createSheetAndFill(Workbook workbook, Object data,List<String> header, String name) {
+	private static void createSheetAndFill(Workbook workbook, Object data, List<String> header, String name) {
 		Sheet sheet = workbook.createSheet(name);
-		List<Map<String,StringBuilder>> list = (List<Map<String,StringBuilder>>) data;
+		List<Map<String, StringBuilder>> list = (List<Map<String, StringBuilder>>) data;
 		createHeader(sheet, header);
 		for (int r = 0; r < list.size(); r++) {
-			if(list.get(r) == null)
+			if (list.get(r) == null)
 				continue;
-			Row row = sheet.createRow(r+1);
-			for(int c = 0; c < header.size(); c++){
+			Row row = sheet.createRow(r + 1);
+			for (int c = 0; c < header.size(); c++) {
 				StringBuilder cusor = list.get(r).get(header.get(c));
-				if(cusor == null)
+				if (cusor == null)
 					continue;
 				Cell cell = row.createCell(c, CellType.STRING);
 				cell.setCellValue(cusor.toString());
 			}
 		}
 	}
-	
-	private static void createHeader(Sheet sheet, List<String> header){
+
+	private static void createHeader(Sheet sheet, List<String> header) {
 		Row row = sheet.createRow(0);
 		CellStyle style = sheet.getWorkbook().createCellStyle();
 		style.setAlignment(HorizontalAlignment.CENTER);
 		style.setVerticalAlignment(VerticalAlignment.CENTER);
 		style.setFillForegroundColor((short) 13);
-		for(int c = 0; c < header.size(); c++){
-			Cell cell = row.createCell(c,CellType.STRING);
+		for (int c = 0; c < header.size(); c++) {
+			Cell cell = row.createCell(c, CellType.STRING);
 			cell.setCellStyle(style);
 			cell.setCellValue(header.get(c));
 		}

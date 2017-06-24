@@ -1,4 +1,4 @@
-package com.zero.zexcel;
+package com.zero.zexcel.processor.impl;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -8,7 +8,15 @@ import java.util.List;
 
 import javax.swing.SwingWorker;
 
-public class CoreProcessor {
+import org.apache.log4j.Logger;
+
+import com.zero.zexcel.frame.KeywordMatchFrame;
+import com.zero.zexcel.processor.task.KeywordLoader;
+import com.zero.zexcel.processor.task.KeywordMatcher;
+
+public class KeywordMatchProcessor extends AbstractProcessor{
+	
+	static final Logger logger = Logger.getLogger(KeywordMatchProcessor.class);
 	
 	private String path;
 	
@@ -26,9 +34,9 @@ public class CoreProcessor {
 	
 	private File resultFolder = null;
 	
-	private MainFrame frame;
+	private KeywordMatchFrame frame;
 	
-	public CoreProcessor(MainFrame frame, String path, String patten){
+	public KeywordMatchProcessor(KeywordMatchFrame frame, String path, String patten){
 		this.frame = frame;
 		this.path = path;
 		this.patten = patten;
@@ -44,7 +52,7 @@ public class CoreProcessor {
 		}
 		createResultFolder();
 		frame.initProgressBar(0, fileList.size() + 1);
-		startTask();
+		startKeywordLoader();
 	}
 	
 	private void createResultFolder(){
@@ -79,20 +87,20 @@ public class CoreProcessor {
 		keyWordFile = keyFile;
 	}
 	
-	private void startTask(){
+	private void startKeywordLoader(){
 		SwingWorker<Object,Object> task = new KeywordLoader(this);
 		task.execute();
 	}
 	
-	public void startSubTask(){
+	public void startKeywordMatcher(){
 		try {
 			for(File file : fileList){
-				SwingWorker<Object,Object> subtask = new SubTask<Object, Object>(file, keywords, this);
+				SwingWorker<Object,Object> subtask = new KeywordMatcher<Object, Object>(file, keywords, this);
 				subtask.execute();
 			}
 			System.out.println("All tasks have been started and running, Please wait... ");
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("startKeywordMatcher error", e);
 		}
 	}
 	
@@ -157,7 +165,7 @@ public class CoreProcessor {
 		this.keywords = keywords;
 	}
 	
-	public MainFrame getFrame(){
+	public KeywordMatchFrame getFrame(){
 		return this.frame;
 	}
 	

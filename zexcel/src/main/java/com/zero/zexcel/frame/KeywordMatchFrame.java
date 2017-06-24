@@ -1,4 +1,4 @@
-package com.zero.zexcel;
+package com.zero.zexcel.frame;
 
 import java.awt.Container;
 import java.awt.Dimension;
@@ -22,13 +22,15 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import org.pushingpixels.substance.api.skin.SubstanceBusinessBlueSteelLookAndFeel;
 
+import com.zero.zexcel.processor.impl.KeywordMatchProcessor;
+import com.zero.zexcel.util.Console;
 import com.zero.zexcel.util.SplitMethod;
 
-public class MainFrame extends JFrame {
+public class KeywordMatchFrame extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME = "ZExcel";
+	private static final String NAME = "ZExcel    V-1.0";
 
 	private static final LayoutManager DEFAULT_LAYOUT = null;
 
@@ -48,9 +50,9 @@ public class MainFrame extends JFrame {
 	
 	private JProgressBar progressBar = new JProgressBar(JProgressBar.HORIZONTAL);
 	
-	private static MainFrame frame;
+	private static KeywordMatchFrame frame;
 
-	private MainFrame() {
+	private KeywordMatchFrame() {
 		super(NAME);
 	}
 
@@ -62,7 +64,7 @@ public class MainFrame extends JFrame {
 
 	private static void initFrame() {
 		if (frame == null) {
-			frame = new MainFrame();
+			frame = new KeywordMatchFrame();
 		}
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setPreferredSize(new Dimension(800, 350));
@@ -171,7 +173,7 @@ public class MainFrame extends JFrame {
 		try {
 			disableProcess();
 			System.out.println("Start process... ");
-			new CoreProcessor(this, s, k).process();
+			new KeywordMatchProcessor(this, s, k).process();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

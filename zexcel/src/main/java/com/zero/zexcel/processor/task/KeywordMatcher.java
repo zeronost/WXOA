@@ -1,4 +1,4 @@
-package com.zero.zexcel;
+package com.zero.zexcel.processor.task;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -9,10 +9,16 @@ import java.util.Map;
 
 import javax.swing.SwingWorker;
 
+import org.apache.log4j.Logger;
+
+import com.zero.zexcel.processor.api.Processor;
+import com.zero.zexcel.processor.impl.KeywordMatchProcessor;
 import com.zero.zexcel.util.SplitMethod;
 import com.zero.zexcel.util.XLSXCovertCSVReader;
 
-public class SubTask<T, V> extends SwingWorker<T, V> {
+public class KeywordMatcher<T, V> extends SwingWorker<T, V> {
+	
+	static final Logger logger = Logger.getLogger(KeywordMatcher.class);
 
 	private final File file;
 
@@ -26,21 +32,24 @@ public class SubTask<T, V> extends SwingWorker<T, V> {
 	
 	private final SplitMethod method;
 	
-	private CoreProcessor currentProcessor;
+	private KeywordMatchProcessor currentProcessor;
 	
 
-	public SubTask(File file, List<String> keywords, CoreProcessor processor) {
+	public KeywordMatcher(File file, List<String> keywords, Processor processor) {
 		super();
 		this.file = file;
 		this.keywords = keywords;
-		this.currentProcessor = processor;
-		this.offset = processor.getFrame().getOffset();
-		this.method = processor.getFrame().getSplitMethod();
-		this.result = processor.getResultFolder().getAbsolutePath();
+		this.currentProcessor = (KeywordMatchProcessor)processor;
+		this.offset = currentProcessor.getFrame().getOffset();
+		this.method = currentProcessor.getFrame().getSplitMethod();
+		this.result = currentProcessor.getResultFolder().getAbsolutePath();
+		logger.info(getCurrentDescription() + " init complete" );
 	}
 
 	@Override
 	protected T doInBackground() throws Exception {
+		logger.info(getCurrentDescription()+ " start running" );
+		Long b =  System.currentTimeMillis();
 		try {
 			if(null == file || null == keywords || keywords.isEmpty())
 				return null;
@@ -55,8 +64,10 @@ public class SubTask<T, V> extends SwingWorker<T, V> {
 			result = result+"\\" + file.getName() + ".zero.xlsx";
 			writeResult(result, processed, 50000);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(getCurrentDescription() + " error ", e);
 		}
+		Long e = System.currentTimeMillis();
+		logger.info(getCurrentDescription()+ " complete, cost time " + (e - b) );
 		return null;
 	}
 	
@@ -113,5 +124,9 @@ public class SubTask<T, V> extends SwingWorker<T, V> {
 	
 	private StringBuilder processString(StringBuilder s, String k){
 		return method.process(s, k, offset);
+	}
+	
+	private String getCurrentDescription(){
+		return "KeywordMatcher#" + Thread.currentThread().getId()+" for file  " +this.file.getAbsolutePath();
 	}
 }
