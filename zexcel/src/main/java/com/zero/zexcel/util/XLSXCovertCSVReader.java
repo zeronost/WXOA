@@ -17,7 +17,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
-import org.apache.poi.hssf.util.HSSFColor.HSSFColorPredefined;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.openxml4j.opc.PackageAccess;
@@ -250,8 +249,7 @@ public class XLSXCovertCSVReader {
 					if (lastColumnNumber == -1) {
 						lastColumnNumber = 0;
 					}
-					if (isCellNull == false)
-					{
+					if (isCellNull == false) {
 						rows.add(record.clone());
 						isCellNull = false;
 						for (int i = 0; i < record.length; i++) {
@@ -327,7 +325,6 @@ public class XLSXCovertCSVReader {
 	/**
 	 * Parses and shows the content of one sheet using the specified styles and
 	 * shared-strings tables.
-	 * 
 	 * @param styles
 	 * @param strings
 	 * @param sheetInputStream
@@ -392,14 +389,7 @@ public class XLSXCovertCSVReader {
 		return rs;
 	}
 
-	public static void main(String[] args) throws Exception {
-		System.out.println("开始导入数据...");
-		File file = new File("D:\\Test\\soure.xlsx");
-		Collection<Object> list = XLSXCovertCSVReader.readExcel(file, 26);
-		System.out.println(list.size());
-	}
-
-	public static boolean createExcelFile(String path, Collection<Object> data,List<String> header, int maxSize) {
+	public static boolean createExcelFile(String path, Collection<Object> data, List<String> header, int maxSize) {
 		boolean isCreateSuccess = false;
 		SXSSFWorkbook workbook = null;
 		try {
@@ -427,31 +417,33 @@ public class XLSXCovertCSVReader {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static void createSheetAndFill(Workbook workbook, Object data,List<String> header, String name) {
+	private static void createSheetAndFill(Workbook workbook, Object data, List<String> header, String name) {
 		Sheet sheet = workbook.createSheet(name);
-		sheet.setColumnWidth(0, 12000);
-		List<Map<String,StringBuffer>> list = (List<Map<String,StringBuffer>>) data;
+		List<Map<String, StringBuilder>> list = (List<Map<String, StringBuilder>>) data;
 		createHeader(sheet, header);
-		StringBuffer cusor = null;
 		for (int r = 0; r < list.size(); r++) {
-			Row row = sheet.createRow(r+1);
-			for(int c = 0; c < header.size(); c++){
+			if (list.get(r) == null)
+				continue;
+			Row row = sheet.createRow(r + 1);
+			for (int c = 0; c < header.size(); c++) {
+				StringBuilder cusor = list.get(r).get(header.get(c));
+				if (cusor == null)
+					continue;
 				Cell cell = row.createCell(c, CellType.STRING);
-				cusor = list.get(r).get(header.get(c));
-				cell.setCellValue(cusor == null ? "N/A" : cusor.toString());
+				cell.setCellValue(cusor.toString());
 			}
 		}
 	}
-	
-	private static void createHeader(Sheet sheet, List<String> header){
+
+	private static void createHeader(Sheet sheet, List<String> header) {
 		Row row = sheet.createRow(0);
 		CellStyle style = sheet.getWorkbook().createCellStyle();
 		style.setAlignment(HorizontalAlignment.CENTER);
 		style.setVerticalAlignment(VerticalAlignment.CENTER);
-		style.setFillBackgroundColor(HSSFColorPredefined.LIGHT_BLUE.getIndex());
-		row.setRowStyle(style);
-		for(int c = 0; c < header.size(); c++){
-			Cell cell = row.createCell(c,CellType.STRING);
+		style.setFillForegroundColor((short) 13);
+		for (int c = 0; c < header.size(); c++) {
+			Cell cell = row.createCell(c, CellType.STRING);
+			cell.setCellStyle(style);
 			cell.setCellValue(header.get(c));
 		}
 	}

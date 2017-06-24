@@ -1,12 +1,22 @@
-package com.zero.zexcel;
+package com.zero.zexcel.processor.impl;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.SwingWorker;
 
-public class CoreProcessor {
+import org.apache.log4j.Logger;
+
+import com.zero.zexcel.frame.KeywordMatchFrame;
+import com.zero.zexcel.processor.task.KeywordLoader;
+import com.zero.zexcel.processor.task.KeywordMatcher;
+
+public class KeywordMatchProcessor extends AbstractProcessor{
+	
+	static final Logger logger = Logger.getLogger(KeywordMatchProcessor.class);
 	
 	private String path;
 	
@@ -22,9 +32,11 @@ public class CoreProcessor {
 	
 	private int processed = 0;
 	
-	private MainFrame frame;
+	private File resultFolder = null;
 	
-	public CoreProcessor(MainFrame frame, String path, String patten){
+	private KeywordMatchFrame frame;
+	
+	public KeywordMatchProcessor(KeywordMatchFrame frame, String path, String patten){
 		this.frame = frame;
 		this.path = path;
 		this.patten = patten;
@@ -38,9 +50,14 @@ public class CoreProcessor {
 			frame.enableProcess();
 			return;
 		}
+		createResultFolder();
 		frame.initProgressBar(0, fileList.size() + 1);
-		frame.setProgressValue(1);
-		startTask();
+		startKeywordLoader();
+	}
+	
+	private void createResultFolder(){
+		resultFolder = new File(fileList.get(0).getParent()+"\\OUT_"+new SimpleDateFormat("YYYYMMddhhmmss").format(new Date()));
+		resultFolder.mkdir();
 	}
 	
 	private void initFileList() throws Exception{
@@ -70,30 +87,30 @@ public class CoreProcessor {
 		keyWordFile = keyFile;
 	}
 	
-	private void startTask(){
+	private void startKeywordLoader(){
 		SwingWorker<Object,Object> task = new KeywordLoader(this);
 		task.execute();
 	}
 	
-	public void startSubTask(){
+	public void startKeywordMatcher(){
 		try {
 			for(File file : fileList){
-				SwingWorker<Object,Object> subtask = new SubTask<Object, Object>(file, keywords, this);
+				SwingWorker<Object,Object> subtask = new KeywordMatcher<Object, Object>(file, keywords, this);
 				subtask.execute();
 			}
 			System.out.println("All tasks have been started and running, Please wait... ");
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("startKeywordMatcher error", e);
 		}
 	}
 	
 	public synchronized void FinishOneTask(){
 		processed ++;
-		this.frame.setProgressValue(processed+1);
+		this.frame.setProgressValue(processed);
 	}
 	
 	public boolean isComplete(){
-		return processed == fileList.size();
+		return processed == fileList.size() + 1;
 	}
 	
 	public void onComplete(){
@@ -148,7 +165,11 @@ public class CoreProcessor {
 		this.keywords = keywords;
 	}
 	
-	public MainFrame getFrame(){
+	public KeywordMatchFrame getFrame(){
 		return this.frame;
+	}
+	
+	public File getResultFolder(){
+		return this.resultFolder;
 	}
 }
