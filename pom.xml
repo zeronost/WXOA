@@ -13,6 +13,7 @@
   <modules>
     <module>core</module>
     <module>rbac</module>
+    <module>zexcel</module>
     <!-- jdk8-tests module activated only when running under JDK8, below -->
   </modules>
 
