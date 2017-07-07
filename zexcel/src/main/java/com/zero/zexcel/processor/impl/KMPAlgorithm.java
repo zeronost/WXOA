@@ -11,7 +11,6 @@ public class KMPAlgorithm {
 		if (null == s || null == t || s.length() < t.length())
 			return NA;
 		if (s == t) {
-			System.out.println("equals");
 			return 0;
 		}
 		int index = kmp(s, t);
