@@ -1,4 +1,3 @@
-package com.zero.zexcel.processor.impl;
 /**
  * @author bx91330
  * KMP algorithm demo
@@ -6,11 +5,14 @@ package com.zero.zexcel.processor.impl;
 public class KMPAlgorithm {
 
 	static final int NA = -1;
+	
+	static int count = 0;
 
 	public static int index_kmp(CharSequence s, CharSequence t) {
 		if (null == s || null == t || s.length() < t.length())
 			return NA;
 		if (s == t) {
+			System.out.println("equals");
 			return 0;
 		}
 		int index = kmp(s, t);
@@ -22,17 +24,19 @@ public class KMPAlgorithm {
 		int[] next = getNext(t);
 		while (i < s.length() && i <= x) {
 			while (j < t.length()) {
+				count++;
 				if (s.charAt(i + j) != t.charAt(j)) {
-					j = 0;
 					break;
 				}
 				j++;
 			}
 			if (j >= t.length()) {
 				break;
-			} else {
-				i++;
-				i += (j - next[j]);
+			} else if(j == 0){
+				i ++;
+			}else{
+				i += (j - next[j-1]);
+				j = 0;
 			}
 		}
 		if (i > x)
@@ -69,6 +73,7 @@ public class KMPAlgorithm {
 		int i = 0, j = 0, x = s.length() - t.length();
 		while (i < s.length() && i <= x) {
 			while (j < t.length()) {
+				count++;
 				if (s.charAt(i + j) != t.charAt(j)) {
 					j = 0;
 					break;
@@ -87,12 +92,13 @@ public class KMPAlgorithm {
 	}
 
 	public static void main(String[] args) {
-		String s = "ABCssadsadeasdsafsafeasdasdeafsafsafsadweasdadsadsadsadsadaswearasdsadsadweaeweqswadsadfsdafdeDEACDEFFxcFAAABCssadsadeasdsafsafeasdasdeafsafsafsadweasdadsadsadsadsadaswearasdsadsadweaeweqswadsadfsdafdeDEACDEFFxcFAA";
-		String t = "sadsadaswearasdsadsadweaeweqswad";
+		String s = "abcdaabcdaxabcdaabcdaabcdaabcdaabcdaabcdaabcdaabcdaabcdaabcdaabcdaabcdaabcdaxabcdaabcdabcdabcabcdabcdabcabcdaAabcdaBabcdaCssadabcdabcdabcdafsafsafsadweasdadsadsadsadsadaswearasdsadsadweaeweqswadsadfsdafdeDEACDEFFxcFAAABCssadsadeasdsafsafeasdasdeafsafsafsadweasdadsadsadsadsadaswearasdsadsadweaeweqswadsadfsdafdeDEACDEFFxcFAA";
+		String t = "abcdabcdabcd";
 		long c1 = System.currentTimeMillis();
-		int index = index_kmp(s, t);
+		int index = index(s, t);
 		long c2 = System.currentTimeMillis();
 		System.out.println("================== " + index);
+		System.out.println("count:: " + count);
 		System.out.println("****************** " + (c2 - c1));
 		if (index > 0)
 			System.out.println(s.substring(index, index + t.length()));
